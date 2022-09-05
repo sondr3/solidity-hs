@@ -1,0 +1,1111 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity ^0.8.4" }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "BlindAuction"
+        , inheritance = Nothing
+        , body =
+            [ CStruct
+                ( StructDefinition
+                    { ident = Identifier "Bid"
+                    , members =
+                        [
+                            ( ElementaryType
+                                ( FixedBytes 32 )
+                            , Identifier "blindedBid"
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Identifier "deposit"
+                            )
+                        ]
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType AddressPayable
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "beneficiary"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "biddingEnd"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "revealEnd"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType Bool
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "ended"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType Address
+                            , kind = ArrayType
+                                ( IdentifierType
+                                    ( IdentifierPath
+                                        [ Identifier "Bid" ]
+                                    )
+                                ) [ ArrayTypeEmpty ]
+                            }
+                        )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "bids"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType Address
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "highestBidder"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "highestBid"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType Address
+                            , kind = ElementaryType ( UnsignedInteger Nothing )
+                            }
+                        )
+                    , modifiers = Just []
+                    , ident = Identifier "pendingReturns"
+                    , expr = Nothing
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "AuctionEnded"
+                    , params =
+                        [
+                            ( ElementaryType Address
+                            , Nothing
+                            , Just
+                                ( Identifier "winner" )
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Nothing
+                            , Just
+                                ( Identifier "highestBid" )
+                            )
+                        ]
+                    , anonymous = False
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "TooEarly"
+                    , params =
+                        [
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Just
+                                ( Identifier "time" )
+                            )
+                        ]
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "TooLate"
+                    , params =
+                        [
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Just
+                                ( Identifier "time" )
+                            )
+                        ]
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "AuctionEndAlreadyCalled"
+                    , params = []
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "onlyBefore"
+                    , params = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "time" )
+                            }
+                        ]
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression GreaterEqual
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "block" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "timestamp" )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "time" )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "TooLate" )
+                                        )
+                                        ( CommaArguments
+                                            [ IdentifierExpression
+                                                ( Identifier "time" )
+                                            ]
+                                        )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "onlyAfter"
+                    , params = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "time" )
+                            }
+                        ]
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression LessEqual
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "block" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "timestamp" )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "time" )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "TooEarly" )
+                                        )
+                                        ( CommaArguments
+                                            [ IdentifierExpression
+                                                ( Identifier "time" )
+                                            ]
+                                        )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , Constructor
+                ( ConstructorDefinition
+                    { params =
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "biddingTime" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "revealTime" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType AddressPayable
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "beneficiaryAddress" )
+                            }
+                        ]
+                    , modifiers = Just []
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "beneficiary" )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "beneficiaryAddress" )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "biddingEnd" )
+                                )
+                                ( BinaryExpression Add
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "block" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "timestamp" )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "biddingTime" )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "revealEnd" )
+                                )
+                                ( BinaryExpression Add
+                                    ( IdentifierExpression
+                                        ( Identifier "biddingEnd" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "revealTime" )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "bid"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "blindedBid" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncMutability Payable
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlyBefore" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "biddingEnd" )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "bids" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "push" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "Bid" )
+                                        )
+                                        ( NamedArguments
+                                            [
+                                                ( Identifier "blindedBid"
+                                                , IdentifierExpression
+                                                    ( Identifier "blindedBid" )
+                                                )
+                                            ,
+                                                ( Identifier "deposit"
+                                                , MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "msg" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "value" )
+                                                    )
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "reveal"
+                    , params =
+                        [ Parameter
+                            { kind = ArrayType
+                                ( ElementaryType ( UnsignedInteger Nothing ) ) [ ArrayTypeEmpty ]
+                            , location = Just Calldata
+                            , ident = Just
+                                ( Identifier "values" )
+                            }
+                        , Parameter
+                            { kind = ArrayType ( ElementaryType Bool ) [ ArrayTypeEmpty ]
+                            , location = Just Calldata
+                            , ident = Just
+                                ( Identifier "fakes" )
+                            }
+                        , Parameter
+                            { kind = ArrayType
+                                ( ElementaryType
+                                    ( FixedBytes 32 )
+                                ) [ ArrayTypeEmpty ]
+                            , location = Just Calldata
+                            , ident = Just
+                                ( Identifier "secrets" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlyAfter" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "biddingEnd" )
+                                        ]
+                                    )
+                                }
+                            )
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlyBefore" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "revealEnd" )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                    , location = Nothing
+                                    , ident = Identifier "length"
+                                    }
+                                )
+                                ( Just
+                                    ( MemberAccess
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "bids" )
+                                            )
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "sender" )
+                                                )
+                                            )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "length" )
+                                        )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "values" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "length" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "fakes" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "length" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "secrets" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "length" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                    , location = Nothing
+                                    , ident = Identifier "refund"
+                                    }
+                                ) Nothing
+                            )
+                        , For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "i"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "length" )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPostInc
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                    )
+                                , body = BlockStatement
+                                    [ VariableStatement
+                                        ( VariableDecStatement
+                                            ( VariableDeclaration
+                                                { kind = IdentifierType
+                                                    ( IdentifierPath
+                                                        [ Identifier "Bid" ]
+                                                    )
+                                                , location = Just Storage
+                                                , ident = Identifier "bidToCheck"
+                                                }
+                                            )
+                                            ( Just
+                                                ( IndexExpression
+                                                    ( IndexExpression
+                                                        ( IdentifierExpression
+                                                            ( Identifier "bids" )
+                                                        )
+                                                        ( MemberAccess
+                                                            ( IdentifierExpression
+                                                                ( Identifier "msg" )
+                                                            )
+                                                            ( MemberAccessIdentifier
+                                                                ( Identifier "sender" )
+                                                            )
+                                                        )
+                                                    )
+                                                    ( IdentifierExpression
+                                                        ( Identifier "i" )
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    , VariableStatement
+                                        ( VariableDecTupleStatement
+                                            [ Just
+                                                ( VariableDeclaration
+                                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                                    , location = Nothing
+                                                    , ident = Identifier "value"
+                                                    }
+                                                )
+                                            , Just
+                                                ( VariableDeclaration
+                                                    { kind = ElementaryType Bool
+                                                    , location = Nothing
+                                                    , ident = Identifier "fake"
+                                                    }
+                                                )
+                                            , Just
+                                                ( VariableDeclaration
+                                                    { kind = ElementaryType
+                                                        ( FixedBytes 32 )
+                                                    , location = Nothing
+                                                    , ident = Identifier "secret"
+                                                    }
+                                                )
+                                            ]
+                                            ( TupleExpression
+                                                [ Just
+                                                    ( IndexExpression
+                                                        ( IdentifierExpression
+                                                            ( Identifier "values" )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "i" )
+                                                        )
+                                                    )
+                                                , Just
+                                                    ( IndexExpression
+                                                        ( IdentifierExpression
+                                                            ( Identifier "fakes" )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "i" )
+                                                        )
+                                                    )
+                                                , Just
+                                                    ( IndexExpression
+                                                        ( IdentifierExpression
+                                                            ( Identifier "secrets" )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "i" )
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    , If
+                                        ( IfStatement
+                                            { expr = BinaryExpression NotEqual
+                                                ( MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "bidToCheck" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "blindedBid" )
+                                                    )
+                                                )
+                                                ( FunctionCall
+                                                    ( IdentifierExpression
+                                                        ( Identifier "keccak256" )
+                                                    )
+                                                    ( CommaArguments
+                                                        [ FunctionCall
+                                                            ( MemberAccess
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "abi" )
+                                                                )
+                                                                ( MemberAccessIdentifier
+                                                                    ( Identifier "encodePacked" )
+                                                                )
+                                                            )
+                                                            ( CommaArguments
+                                                                [ IdentifierExpression
+                                                                    ( Identifier "value" )
+                                                                , IdentifierExpression
+                                                                    ( Identifier "fake" )
+                                                                , IdentifierExpression
+                                                                    ( Identifier "secret" )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    )
+                                                )
+                                            , trueStmt = BlockStatement [ Continue ]
+                                            , elseStmt = Nothing
+                                            }
+                                        )
+                                    , ExpressionStatement
+                                        ( BinaryExpression AssignAdd
+                                            ( IdentifierExpression
+                                                ( Identifier "refund" )
+                                            )
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "bidToCheck" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "deposit" )
+                                                )
+                                            )
+                                        )
+                                    , If
+                                        ( IfStatement
+                                            { expr = BinaryExpression And
+                                                ( UnaryExpression UPreNot
+                                                    ( IdentifierExpression
+                                                        ( Identifier "fake" )
+                                                    )
+                                                )
+                                                ( BinaryExpression GreaterEqual
+                                                    ( MemberAccess
+                                                        ( IdentifierExpression
+                                                            ( Identifier "bidToCheck" )
+                                                        )
+                                                        ( MemberAccessIdentifier
+                                                            ( Identifier "deposit" )
+                                                        )
+                                                    )
+                                                    ( IdentifierExpression
+                                                        ( Identifier "value" )
+                                                    )
+                                                )
+                                            , trueStmt = BlockStatement
+                                                [ If
+                                                    ( IfStatement
+                                                        { expr = FunctionCall
+                                                            ( IdentifierExpression
+                                                                ( Identifier "placeBid" )
+                                                            )
+                                                            ( CommaArguments
+                                                                [ MemberAccess
+                                                                    ( IdentifierExpression
+                                                                        ( Identifier "msg" )
+                                                                    )
+                                                                    ( MemberAccessIdentifier
+                                                                        ( Identifier "sender" )
+                                                                    )
+                                                                , IdentifierExpression
+                                                                    ( Identifier "value" )
+                                                                ]
+                                                            )
+                                                        , trueStmt = ExpressionStatement
+                                                            ( BinaryExpression AssignSub
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "refund" )
+                                                                )
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "value" )
+                                                                )
+                                                            )
+                                                        , elseStmt = Nothing
+                                                        }
+                                                    )
+                                                ]
+                                            , elseStmt = Nothing
+                                            }
+                                        )
+                                    , ExpressionStatement
+                                        ( BinaryExpression Assign
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "bidToCheck" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "blindedBid" )
+                                                )
+                                            )
+                                            ( FunctionCall
+                                                ( ElementaryTypeExpression
+                                                    ( FixedBytes 32 )
+                                                )
+                                                ( CommaArguments
+                                                    [ ExpressionLiteral
+                                                        ( NumberLiteral 0.0 Nothing )
+                                                    ]
+                                                )
+                                            )
+                                        )
+                                    ]
+                                }
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( PayableConversion
+                                        ( CommaArguments
+                                            [ MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "sender" )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "refund" )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "withdraw"
+                    , params = []
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                    , location = Nothing
+                                    , ident = Identifier "amount"
+                                    }
+                                )
+                                ( Just
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "pendingReturns" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        , If
+                            ( IfStatement
+                                { expr = BinaryExpression GreaterThan
+                                    ( IdentifierExpression
+                                        ( Identifier "amount" )
+                                    )
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 0.0 Nothing )
+                                    )
+                                , trueStmt = BlockStatement
+                                    [ ExpressionStatement
+                                        ( BinaryExpression Assign
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "pendingReturns" )
+                                                )
+                                                ( MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "msg" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "sender" )
+                                                    )
+                                                )
+                                            )
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    , ExpressionStatement
+                                        ( FunctionCall
+                                            ( MemberAccess
+                                                ( PayableConversion
+                                                    ( CommaArguments
+                                                        [ MemberAccess
+                                                            ( IdentifierExpression
+                                                                ( Identifier "msg" )
+                                                            )
+                                                            ( MemberAccessIdentifier
+                                                                ( Identifier "sender" )
+                                                            )
+                                                        ]
+                                                    )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "transfer" )
+                                                )
+                                            )
+                                            ( CommaArguments
+                                                [ IdentifierExpression
+                                                    ( Identifier "amount" )
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                , elseStmt = Nothing
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "auctionEnd"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlyAfter" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "revealEnd" )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = IdentifierExpression
+                                    ( Identifier "ended" )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "AuctionEndAlreadyCalled" )
+                                        )
+                                        ( CommaArguments [] )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "AuctionEnded" )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "highestBidder" )
+                                    , IdentifierExpression
+                                        ( Identifier "highestBid" )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "ended" )
+                                )
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "beneficiary" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "highestBid" )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "placeBid"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "bidder" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "value" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncInternal ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType Bool
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "success" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression LessEqual
+                                    ( IdentifierExpression
+                                        ( Identifier "value" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "highestBid" )
+                                    )
+                                , trueStmt = BlockStatement
+                                    [ Return
+                                        ( Just
+                                            ( ExpressionLiteral ( BooleanLiteral False ) )
+                                        )
+                                    ]
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , If
+                            ( IfStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( IdentifierExpression
+                                        ( Identifier "highestBidder" )
+                                    )
+                                    ( FunctionCall ( ElementaryTypeExpression Address )
+                                        ( CommaArguments
+                                            [ ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            ]
+                                        )
+                                    )
+                                , trueStmt = BlockStatement
+                                    [ ExpressionStatement
+                                        ( BinaryExpression AssignAdd
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "pendingReturns" )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "highestBidder" )
+                                                )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "highestBid" )
+                                            )
+                                        )
+                                    ]
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "highestBid" )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "value" )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "highestBidder" )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "bidder" )
+                                )
+                            )
+                        , Return
+                            ( Just
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]

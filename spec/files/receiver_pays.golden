@@ -1,0 +1,619 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity >=0.7.0 <0.9.0" }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "ReceiverPays"
+        , inheritance = Nothing
+        , body =
+            [ CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType Address
+                    , modifiers = Just []
+                    , ident = Identifier "owner"
+                    , expr = Just
+                        ( MemberAccess
+                            ( IdentifierExpression
+                                ( Identifier "msg" )
+                            )
+                            ( MemberAccessIdentifier
+                                ( Identifier "sender" )
+                            )
+                        )
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType
+                                ( UnsignedInteger
+                                    ( Just 256 )
+                                )
+                            , kind = ElementaryType Bool
+                            }
+                        )
+                    , modifiers = Just []
+                    , ident = Identifier "usedNonces"
+                    , expr = Nothing
+                    }
+                )
+            , Constructor
+                ( ConstructorDefinition
+                    { params = []
+                    , modifiers = Just [ ConPayable ]
+                    , body = BlockStatement []
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "claimPayment"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( UnsignedInteger
+                                    ( Just 256 )
+                                )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "amount" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType
+                                ( UnsignedInteger
+                                    ( Just 256 )
+                                )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "nonce" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType Bytes
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "signature" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ UnaryExpression UPreNot
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "usedNonces" )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "nonce" )
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IndexExpression
+                                    ( IdentifierExpression
+                                        ( Identifier "usedNonces" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "nonce" )
+                                    )
+                                )
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        , VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType
+                                        ( FixedBytes 32 )
+                                    , location = Nothing
+                                    , ident = Identifier "message"
+                                    }
+                                )
+                                ( Just
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "prefixed" )
+                                        )
+                                        ( CommaArguments
+                                            [ FunctionCall
+                                                ( IdentifierExpression
+                                                    ( Identifier "keccak256" )
+                                                )
+                                                ( CommaArguments
+                                                    [ FunctionCall
+                                                        ( MemberAccess
+                                                            ( IdentifierExpression
+                                                                ( Identifier "abi" )
+                                                            )
+                                                            ( MemberAccessIdentifier
+                                                                ( Identifier "encodePacked" )
+                                                            )
+                                                        )
+                                                        ( CommaArguments
+                                                            [ MemberAccess
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "msg" )
+                                                                )
+                                                                ( MemberAccessIdentifier
+                                                                    ( Identifier "sender" )
+                                                                )
+                                                            , IdentifierExpression
+                                                                ( Identifier "amount" )
+                                                            , IdentifierExpression
+                                                                ( Identifier "nonce" )
+                                                            , IdentifierExpression
+                                                                ( Identifier "this" )
+                                                            ]
+                                                        )
+                                                    ]
+                                                )
+                                            ]
+                                        )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( FunctionCall
+                                            ( IdentifierExpression
+                                                ( Identifier "recoverSigner" )
+                                            )
+                                            ( CommaArguments
+                                                [ IdentifierExpression
+                                                    ( Identifier "message" )
+                                                , IdentifierExpression
+                                                    ( Identifier "signature" )
+                                                ]
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "owner" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( PayableConversion
+                                        ( CommaArguments
+                                            [ MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "sender" )
+                                                )
+                                            ]
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "amount" )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "shutdown"
+                    , params = []
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "owner" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "selfdestruct" )
+                                )
+                                ( CommaArguments
+                                    [ PayableConversion
+                                        ( CommaArguments
+                                            [ MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "sender" )
+                                                )
+                                            ]
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "splitSignature"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Bytes
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "sig" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncInternal
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( UnsignedInteger
+                                    ( Just 8 )
+                                )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "v" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "r" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "s" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "sig" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 65.0 Nothing )
+                                        )
+                                    ]
+                                )
+                            )
+                        , Assembly
+                            ( AssemblyStatement
+                                { dialect = Nothing
+                                , flags = []
+                                , body =
+                                    [ YulAssignment
+                                        ( YulAssignmentDeclaration
+                                            ( YulIdentifierPath
+                                                [ YulIdentifier
+                                                    ( Identifier "r" )
+                                                ]
+                                            )
+                                            ( YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "mload" )
+                                                    , body =
+                                                        [ YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "sig" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionLiteral
+                                                                        ( YulDecimalNumber 32 )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        )
+                                    , YulAssignment
+                                        ( YulAssignmentDeclaration
+                                            ( YulIdentifierPath
+                                                [ YulIdentifier
+                                                    ( Identifier "s" )
+                                                ]
+                                            )
+                                            ( YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "mload" )
+                                                    , body =
+                                                        [ YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "sig" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionLiteral
+                                                                        ( YulDecimalNumber 64 )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        )
+                                    , YulAssignment
+                                        ( YulAssignmentDeclaration
+                                            ( YulIdentifierPath
+                                                [ YulIdentifier
+                                                    ( Identifier "v" )
+                                                ]
+                                            )
+                                            ( YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "byte" )
+                                                    , body =
+                                                        [ YulExpressionLiteral
+                                                            ( YulDecimalNumber 0 )
+                                                        , YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "mload" )
+                                                                , body =
+                                                                    [ YulExpressionFunctionCall
+                                                                        ( YulFunctionCallDeclaration
+                                                                            { ident = YulEvmBuiltin
+                                                                                ( Identifier "add" )
+                                                                            , body =
+                                                                                [ YulExpressionPath
+                                                                                    ( YulIdentifierPath
+                                                                                        [ YulIdentifier
+                                                                                            ( Identifier "sig" )
+                                                                                        ]
+                                                                                    )
+                                                                                , YulExpressionLiteral
+                                                                                    ( YulDecimalNumber 96 )
+                                                                                ]
+                                                                            }
+                                                                        )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        )
+                                    ]
+                                }
+                            )
+                        , Return
+                            ( Just
+                                ( TupleExpression
+                                    [ Just
+                                        ( IdentifierExpression
+                                            ( Identifier "v" )
+                                        )
+                                    , Just
+                                        ( IdentifierExpression
+                                            ( Identifier "r" )
+                                        )
+                                    , Just
+                                        ( IdentifierExpression
+                                            ( Identifier "s" )
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "recoverSigner"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "message" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType Bytes
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "sig" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncInternal
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Nothing
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecTupleStatement
+                                [ Just
+                                    ( VariableDeclaration
+                                        { kind = ElementaryType
+                                            ( UnsignedInteger
+                                                ( Just 8 )
+                                            )
+                                        , location = Nothing
+                                        , ident = Identifier "v"
+                                        }
+                                    )
+                                , Just
+                                    ( VariableDeclaration
+                                        { kind = ElementaryType
+                                            ( FixedBytes 32 )
+                                        , location = Nothing
+                                        , ident = Identifier "r"
+                                        }
+                                    )
+                                , Just
+                                    ( VariableDeclaration
+                                        { kind = ElementaryType
+                                            ( FixedBytes 32 )
+                                        , location = Nothing
+                                        , ident = Identifier "s"
+                                        }
+                                    )
+                                ]
+                                ( FunctionCall
+                                    ( IdentifierExpression
+                                        ( Identifier "splitSignature" )
+                                    )
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "sig" )
+                                        ]
+                                    )
+                                )
+                            )
+                        , Return
+                            ( Just
+                                ( FunctionCall
+                                    ( IdentifierExpression
+                                        ( Identifier "ecrecover" )
+                                    )
+                                    ( CommaArguments
+                                        [ IdentifierExpression
+                                            ( Identifier "message" )
+                                        , IdentifierExpression
+                                            ( Identifier "v" )
+                                        , IdentifierExpression
+                                            ( Identifier "r" )
+                                        , IdentifierExpression
+                                            ( Identifier "s" )
+                                        ]
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "prefixed"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "hash" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncInternal
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Nothing
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ Return
+                            ( Just
+                                ( FunctionCall
+                                    ( IdentifierExpression
+                                        ( Identifier "keccak256" )
+                                    )
+                                    ( CommaArguments
+                                        [ FunctionCall
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "abi" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "encodePacked" )
+                                                )
+                                            )
+                                            ( CommaArguments
+                                                [ ExpressionLiteral
+                                                    ( StringLiteral "ƞthereum Signed Message:
+                                                    32" )
+                                                , IdentifierExpression
+                                                    ( Identifier "hash" )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]

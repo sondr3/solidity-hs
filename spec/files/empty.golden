@@ -1,0 +1,219 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity >=0.4.16 <0.9.0" }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "SimpleStorage"
+        , inheritance = Nothing
+        , body =
+            [ CFunction
+                ( FunctionDefinition
+                    { name = Identifier "set"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "x" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncPublic ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType String
+                                    , location = Nothing
+                                    , ident = Identifier "name"
+                                    }
+                                )
+                                ( Just
+                                    ( ExpressionLiteral
+                                        ( StringLiteral "haskell" )
+                                    )
+                                )
+                            )
+                        , VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                    , location = Nothing
+                                    , ident = Identifier "amount"
+                                    }
+                                ) Nothing
+                            )
+                        , While
+                            ( WhileStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 4.0 Nothing )
+                                    )
+                                    ( TupleExpression
+                                        [ Just
+                                            ( BinaryExpression Sub
+                                                ( ExpressionLiteral
+                                                    ( NumberLiteral 8.0 Nothing )
+                                                )
+                                                ( ExpressionLiteral
+                                                    ( NumberLiteral 4.0 Nothing )
+                                                )
+                                            )
+                                        ]
+                                    )
+                                , stmt = BlockStatement [ Break ]
+                                }
+                            )
+                        , DoWhile
+                            ( DoWhileStatement
+                                { stmt = BlockStatement
+                                    [ ExpressionStatement
+                                        ( FunctionCall
+                                            ( IdentifierExpression
+                                                ( Identifier "print" )
+                                            )
+                                            ( CommaArguments [] )
+                                        )
+                                    ]
+                                , expr = BinaryExpression NotEqual
+                                    ( ExpressionLiteral ( BooleanLiteral True ) )
+                                    ( ExpressionLiteral ( BooleanLiteral False ) )
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "get"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncPublic
+                        , FuncMutability View
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Nothing
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = IdentifierExpression
+                                    ( Identifier "whatever" )
+                                , trueStmt = BlockStatement
+                                    [ While
+                                        ( WhileStatement
+                                            { expr = ExpressionLiteral ( BooleanLiteral False )
+                                            , stmt = BlockStatement []
+                                            }
+                                        )
+                                    ]
+                                , elseStmt = Just
+                                    ( BlockStatement
+                                        [ If
+                                            ( IfStatement
+                                                { expr = ExpressionLiteral ( BooleanLiteral False )
+                                                , trueStmt = BlockStatement [ Continue ]
+                                                , elseStmt = Nothing
+                                                }
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        , For
+                            ( ForStatement
+                                { initializer = ForInitializerEmpty
+                                , condition = Nothing
+                                , increment = Nothing
+                                , body = BlockStatement [ Return Nothing ]
+                                }
+                            )
+                        , For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "i"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "proposalNames" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPostInc
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                    )
+                                , body = BlockStatement []
+                                }
+                            )
+                        , Return
+                            ( Just
+                                ( BinaryExpression Exp
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 4.0 Nothing )
+                                    )
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 2.0 Nothing )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+, Interface
+    ( InterfaceDefinition
+        { name = Identifier "AnInterfaceThing"
+        , inheritance = Just
+            [ InheritanceSpecifier
+                ( IdentifierPath
+                    [ Identifier "Parent" ]
+                ) Nothing
+            , InheritanceSpecifier
+                ( IdentifierPath
+                    [ Identifier "SuperParent" ]
+                ) Nothing
+            ]
+        , body =
+            [ CFunction
+                ( FunctionDefinition
+                    { name = Identifier "doSomethingSweet"
+                    , params = []
+                    , restrictions = []
+                    , returns = Nothing
+                    , body = BlockStatement []
+                    }
+                )
+            ]
+        }
+    )
+]

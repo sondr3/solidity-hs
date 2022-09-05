@@ -1,0 +1,923 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity >=0.7.0 <0.9.0" }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "Ballot"
+        , inheritance = Nothing
+        , body =
+            [ CStruct
+                ( StructDefinition
+                    { ident = Identifier "Voter"
+                    , members =
+                        [
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Identifier "weight"
+                            )
+                        ,
+                            ( ElementaryType Bool
+                            , Identifier "voted"
+                            )
+                        ,
+                            ( ElementaryType Address
+                            , Identifier "delegate"
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Identifier "vote"
+                            )
+                        ]
+                    }
+                )
+            , CStruct
+                ( StructDefinition
+                    { ident = Identifier "Proposal"
+                    , members =
+                        [
+                            ( ElementaryType
+                                ( FixedBytes 32 )
+                            , Identifier "name"
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Identifier "voteCount"
+                            )
+                        ]
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType Address
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "chairperson"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType Address
+                            , kind = IdentifierType
+                                ( IdentifierPath
+                                    [ Identifier "Voter" ]
+                                )
+                            }
+                        )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "voters"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ArrayType
+                        ( IdentifierType
+                            ( IdentifierPath
+                                [ Identifier "Proposal" ]
+                            )
+                        ) [ ArrayTypeEmpty ]
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "proposals"
+                    , expr = Nothing
+                    }
+                )
+            , Constructor
+                ( ConstructorDefinition
+                    { params =
+                        [ Parameter
+                            { kind = ArrayType
+                                ( ElementaryType
+                                    ( FixedBytes 32 )
+                                ) [ ArrayTypeEmpty ]
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "proposalNames" )
+                            }
+                        ]
+                    , modifiers = Just []
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "chairperson" )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "msg" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "sender" )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "voters" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "chairperson" )
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "weight" )
+                                    )
+                                )
+                                ( ExpressionLiteral
+                                    ( NumberLiteral 1.0 Nothing )
+                                )
+                            )
+                        , For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "i"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "proposalNames" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPostInc
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                    )
+                                , body = BlockStatement
+                                    [ ExpressionStatement
+                                        ( FunctionCall
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "proposals" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "push" )
+                                                )
+                                            )
+                                            ( CommaArguments
+                                                [ FunctionCall
+                                                    ( IdentifierExpression
+                                                        ( Identifier "Proposal" )
+                                                    )
+                                                    ( NamedArguments
+                                                        [
+                                                            ( Identifier "name"
+                                                            , IndexExpression
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "proposalNames" )
+                                                                )
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "i" )
+                                                                )
+                                                            )
+                                                        ,
+                                                            ( Identifier "voteCount"
+                                                            , ExpressionLiteral
+                                                                ( NumberLiteral 0.0 Nothing )
+                                                            )
+                                                        ]
+                                                    )
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "giveRightToVote"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "voter" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "chairperson" )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "Only chairperson can give right to vote." )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ UnaryExpression UPreNot
+                                        ( MemberAccess
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "voters" )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "voter" )
+                                                )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "voted" )
+                                            )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "The voter already voted." )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( MemberAccess
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "voters" )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "voter" )
+                                                )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "weight" )
+                                            )
+                                        )
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 0.0 Nothing )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "voters" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "voter" )
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "weight" )
+                                    )
+                                )
+                                ( ExpressionLiteral
+                                    ( NumberLiteral 1.0 Nothing )
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "delegate"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "to" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = IdentifierType
+                                        ( IdentifierPath
+                                            [ Identifier "Voter" ]
+                                        )
+                                    , location = Just Storage
+                                    , ident = Identifier "sender"
+                                    }
+                                )
+                                ( Just
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "voters" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ UnaryExpression UPreNot
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "sender" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "voted" )
+                                            )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "You already voted." )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression NotEqual
+                                        ( IdentifierExpression
+                                            ( Identifier "to" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "Self-delegation is disallowed." )
+                                    ]
+                                )
+                            )
+                        , While
+                            ( WhileStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( MemberAccess
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "voters" )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "to" )
+                                            )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "delegate" )
+                                        )
+                                    )
+                                    ( FunctionCall ( ElementaryTypeExpression Address )
+                                        ( CommaArguments
+                                            [ ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            ]
+                                        )
+                                    )
+                                , stmt = BlockStatement
+                                    [ ExpressionStatement
+                                        ( BinaryExpression Assign
+                                            ( IdentifierExpression
+                                                ( Identifier "to" )
+                                            )
+                                            ( MemberAccess
+                                                ( IndexExpression
+                                                    ( IdentifierExpression
+                                                        ( Identifier "voters" )
+                                                    )
+                                                    ( IdentifierExpression
+                                                        ( Identifier "to" )
+                                                    )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "delegate" )
+                                                )
+                                            )
+                                        )
+                                    , ExpressionStatement
+                                        ( FunctionCall
+                                            ( IdentifierExpression
+                                                ( Identifier "require" )
+                                            )
+                                            ( CommaArguments
+                                                [ BinaryExpression NotEqual
+                                                    ( IdentifierExpression
+                                                        ( Identifier "to" )
+                                                    )
+                                                    ( MemberAccess
+                                                        ( IdentifierExpression
+                                                            ( Identifier "msg" )
+                                                        )
+                                                        ( MemberAccessIdentifier
+                                                            ( Identifier "sender" )
+                                                        )
+                                                    )
+                                                , ExpressionLiteral
+                                                    ( StringLiteral "Found loop in delegation." )
+                                                ]
+                                            )
+                                        )
+                                    ]
+                                }
+                            )
+                        , VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = IdentifierType
+                                        ( IdentifierPath
+                                            [ Identifier "Voter" ]
+                                        )
+                                    , location = Just Storage
+                                    , ident = Identifier "delegate_"
+                                    }
+                                )
+                                ( Just
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "voters" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "to" )
+                                        )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression GreaterEqual
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "delegate_" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "weight" )
+                                            )
+                                        )
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 1.0 Nothing )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "sender" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "voted" )
+                                    )
+                                )
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "sender" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "delegate" )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "to" )
+                                )
+                            )
+                        , If
+                            ( IfStatement
+                                { expr = MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "delegate_" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "voted" )
+                                    )
+                                , trueStmt = BlockStatement
+                                    [ ExpressionStatement
+                                        ( BinaryExpression AssignAdd
+                                            ( MemberAccess
+                                                ( IndexExpression
+                                                    ( IdentifierExpression
+                                                        ( Identifier "proposals" )
+                                                    )
+                                                    ( MemberAccess
+                                                        ( IdentifierExpression
+                                                            ( Identifier "delegate_" )
+                                                        )
+                                                        ( MemberAccessIdentifier
+                                                            ( Identifier "vote" )
+                                                        )
+                                                    )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "voteCount" )
+                                                )
+                                            )
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "sender" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "weight" )
+                                                )
+                                            )
+                                        )
+                                    ]
+                                , elseStmt = Just
+                                    ( BlockStatement
+                                        [ ExpressionStatement
+                                            ( BinaryExpression AssignAdd
+                                                ( MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "delegate_" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "weight" )
+                                                    )
+                                                )
+                                                ( MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "sender" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "weight" )
+                                                    )
+                                                )
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "vote"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "proposal" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = IdentifierType
+                                        ( IdentifierPath
+                                            [ Identifier "Voter" ]
+                                        )
+                                    , location = Just Storage
+                                    , ident = Identifier "sender"
+                                    }
+                                )
+                                ( Just
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "voters" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression NotEqual
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "sender" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "weight" )
+                                            )
+                                        )
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 0.0 Nothing )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "Has no right to vote" )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ UnaryExpression UPreNot
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "sender" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "voted" )
+                                            )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "Already voted." )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "sender" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "voted" )
+                                    )
+                                )
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "sender" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "vote" )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "proposal" )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression AssignAdd
+                                ( MemberAccess
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "proposals" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "proposal" )
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "voteCount" )
+                                    )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "sender" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "weight" )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "winningProposal"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncPublic
+                        , FuncMutability View
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "winningProposal_" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ VariableStatement
+                            ( VariableDecStatement
+                                ( VariableDeclaration
+                                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                                    , location = Nothing
+                                    , ident = Identifier "winningVoteCount"
+                                    }
+                                )
+                                ( Just
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 0.0 Nothing )
+                                    )
+                                )
+                            )
+                        , For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "p"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "p" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "proposals" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPostInc
+                                        ( IdentifierExpression
+                                            ( Identifier "p" )
+                                        )
+                                    )
+                                , body = BlockStatement
+                                    [ If
+                                        ( IfStatement
+                                            { expr = BinaryExpression GreaterThan
+                                                ( MemberAccess
+                                                    ( IndexExpression
+                                                        ( IdentifierExpression
+                                                            ( Identifier "proposals" )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "p" )
+                                                        )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "voteCount" )
+                                                    )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "winningVoteCount" )
+                                                )
+                                            , trueStmt = BlockStatement
+                                                [ ExpressionStatement
+                                                    ( BinaryExpression Assign
+                                                        ( IdentifierExpression
+                                                            ( Identifier "winningVoteCount" )
+                                                        )
+                                                        ( MemberAccess
+                                                            ( IndexExpression
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "proposals" )
+                                                                )
+                                                                ( IdentifierExpression
+                                                                    ( Identifier "p" )
+                                                                )
+                                                            )
+                                                            ( MemberAccessIdentifier
+                                                                ( Identifier "voteCount" )
+                                                            )
+                                                        )
+                                                    )
+                                                , ExpressionStatement
+                                                    ( BinaryExpression Assign
+                                                        ( IdentifierExpression
+                                                            ( Identifier "winningProposal_" )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "p" )
+                                                        )
+                                                    )
+                                                ]
+                                            , elseStmt = Nothing
+                                            }
+                                        )
+                                    ]
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "winnerName"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncMutability View
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType
+                                ( FixedBytes 32 )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "winnerName_" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "winnerName_" )
+                                )
+                                ( MemberAccess
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "proposals" )
+                                        )
+                                        ( FunctionCall
+                                            ( IdentifierExpression
+                                                ( Identifier "winningProposal" )
+                                            )
+                                            ( CommaArguments [] )
+                                        )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "name" )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]

@@ -1,0 +1,6 @@
+:set -XOverloadedStrings
+:set -isrc
+import Text.Megaparsec
+import qualified Data.Text as T
+import Text.Megaparsec.Char
+import qualified Text.Megaparsec.Char.Lexer as L

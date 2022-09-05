@@ -1,0 +1,480 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity >=0.4.16 <0.9.0" }
+    )
+, Library
+    ( LibraryDefinition
+        { name = Identifier "VectorSum"
+        , body =
+            [ CFunction
+                ( FunctionDefinition
+                    { name = Identifier "sumSolidity"
+                    , params =
+                        [ Parameter
+                            { kind = ArrayType
+                                ( ElementaryType ( UnsignedInteger Nothing ) ) [ ArrayTypeEmpty ]
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "data" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncPublic
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "sum" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "i"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "data" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPreInc
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                    )
+                                , body = ExpressionStatement
+                                    ( BinaryExpression AssignAdd
+                                        ( IdentifierExpression
+                                            ( Identifier "sum" )
+                                        )
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "data" )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "i" )
+                                            )
+                                        )
+                                    )
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "sumAsm"
+                    , params =
+                        [ Parameter
+                            { kind = ArrayType
+                                ( ElementaryType ( UnsignedInteger Nothing ) ) [ ArrayTypeEmpty ]
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "data" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncPublic
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "sum" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ For
+                            ( ForStatement
+                                { initializer = ForInitializerVariable
+                                    ( VariableDecStatement
+                                        ( VariableDeclaration
+                                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                                            , location = Nothing
+                                            , ident = Identifier "i"
+                                            }
+                                        )
+                                        ( Just
+                                            ( ExpressionLiteral
+                                                ( NumberLiteral 0.0 Nothing )
+                                            )
+                                        )
+                                    )
+                                , condition = Just
+                                    ( BinaryExpression LessThan
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "data" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "length" )
+                                            )
+                                        )
+                                    )
+                                , increment = Just
+                                    ( UnaryExpression UPreInc
+                                        ( IdentifierExpression
+                                            ( Identifier "i" )
+                                        )
+                                    )
+                                , body = BlockStatement
+                                    [ Assembly
+                                        ( AssemblyStatement
+                                            { dialect = Nothing
+                                            , flags = []
+                                            , body =
+                                                [ YulAssignment
+                                                    ( YulAssignmentDeclaration
+                                                        ( YulIdentifierPath
+                                                            [ YulIdentifier
+                                                                ( Identifier "sum" )
+                                                            ]
+                                                        )
+                                                        ( YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "sum" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionFunctionCall
+                                                                        ( YulFunctionCallDeclaration
+                                                                            { ident = YulEvmBuiltin
+                                                                                ( Identifier "mload" )
+                                                                            , body =
+                                                                                [ YulExpressionFunctionCall
+                                                                                    ( YulFunctionCallDeclaration
+                                                                                        { ident = YulEvmBuiltin
+                                                                                            ( Identifier "add" )
+                                                                                        , body =
+                                                                                            [ YulExpressionFunctionCall
+                                                                                                ( YulFunctionCallDeclaration
+                                                                                                    { ident = YulEvmBuiltin
+                                                                                                        ( Identifier "add" )
+                                                                                                    , body =
+                                                                                                        [ YulExpressionPath
+                                                                                                            ( YulIdentifierPath
+                                                                                                                [ YulIdentifier
+                                                                                                                    ( Identifier "data" )
+                                                                                                                ]
+                                                                                                            )
+                                                                                                        , YulExpressionLiteral
+                                                                                                            ( YulHexNumber 32 )
+                                                                                                        ]
+                                                                                                    }
+                                                                                                )
+                                                                                            , YulExpressionFunctionCall
+                                                                                                ( YulFunctionCallDeclaration
+                                                                                                    { ident = YulEvmBuiltin
+                                                                                                        ( Identifier "mul" )
+                                                                                                    , body =
+                                                                                                        [ YulExpressionPath
+                                                                                                            ( YulIdentifierPath
+                                                                                                                [ YulIdentifier
+                                                                                                                    ( Identifier "i" )
+                                                                                                                ]
+                                                                                                            )
+                                                                                                        , YulExpressionLiteral
+                                                                                                            ( YulHexNumber 32 )
+                                                                                                        ]
+                                                                                                    }
+                                                                                                )
+                                                                                            ]
+                                                                                        }
+                                                                                    )
+                                                                                ]
+                                                                            }
+                                                                        )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                ]
+                                            }
+                                        )
+                                    ]
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "sumPureAsm"
+                    , params =
+                        [ Parameter
+                            { kind = ArrayType
+                                ( ElementaryType ( UnsignedInteger Nothing ) ) [ ArrayTypeEmpty ]
+                            , location = Just Memory
+                            , ident = Just
+                                ( Identifier "data" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncPublic
+                        , FuncMutability Pure
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "sum" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ Assembly
+                            ( AssemblyStatement
+                                { dialect = Nothing
+                                , flags = []
+                                , body =
+                                    [ YulVariableStatement
+                                        ( YulVariableDeclaration
+                                            ( YulIdentifier
+                                                ( Identifier "len" )
+                                            )
+                                            ( YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "mload" )
+                                                    , body =
+                                                        [ YulExpressionPath
+                                                            ( YulIdentifierPath
+                                                                [ YulIdentifier
+                                                                    ( Identifier "data" )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        )
+                                    , YulVariableStatement
+                                        ( YulVariableDeclaration
+                                            ( YulIdentifier
+                                                ( Identifier "dataElementLocation" )
+                                            )
+                                            ( YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "add" )
+                                                    , body =
+                                                        [ YulExpressionPath
+                                                            ( YulIdentifierPath
+                                                                [ YulIdentifier
+                                                                    ( Identifier "data" )
+                                                                ]
+                                                            )
+                                                        , YulExpressionLiteral
+                                                            ( YulHexNumber 32 )
+                                                        ]
+                                                    }
+                                                )
+                                            )
+                                        )
+                                    , YulForStatement
+                                        ( YulForStatementDeclaration
+                                            { initializer = YulBlock
+                                                [ YulVariableStatement
+                                                    ( YulVariableDeclaration
+                                                        ( YulIdentifier
+                                                            ( Identifier "end" )
+                                                        )
+                                                        ( YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "dataElementLocation" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionFunctionCall
+                                                                        ( YulFunctionCallDeclaration
+                                                                            { ident = YulEvmBuiltin
+                                                                                ( Identifier "mul" )
+                                                                            , body =
+                                                                                [ YulExpressionPath
+                                                                                    ( YulIdentifierPath
+                                                                                        [ YulIdentifier
+                                                                                            ( Identifier "len" )
+                                                                                        ]
+                                                                                    )
+                                                                                , YulExpressionLiteral
+                                                                                    ( YulHexNumber 32 )
+                                                                                ]
+                                                                            }
+                                                                        )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                ]
+                                            , condition = YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "lt" )
+                                                    , body =
+                                                        [ YulExpressionPath
+                                                            ( YulIdentifierPath
+                                                                [ YulIdentifier
+                                                                    ( Identifier "dataElementLocation" )
+                                                                ]
+                                                            )
+                                                        , YulExpressionPath
+                                                            ( YulIdentifierPath
+                                                                [ YulIdentifier
+                                                                    ( Identifier "end" )
+                                                                ]
+                                                            )
+                                                        ]
+                                                    }
+                                                )
+                                            , increment = YulBlock
+                                                [ YulAssignment
+                                                    ( YulAssignmentDeclaration
+                                                        ( YulIdentifierPath
+                                                            [ YulIdentifier
+                                                                ( Identifier "data" )
+                                                            ]
+                                                        )
+                                                        ( YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "dataElementLocation" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionLiteral
+                                                                        ( YulHexNumber 32 )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                ]
+                                            , body = YulBlock
+                                                [ YulAssignment
+                                                    ( YulAssignmentDeclaration
+                                                        ( YulIdentifierPath
+                                                            [ YulIdentifier
+                                                                ( Identifier "sum" )
+                                                            ]
+                                                        )
+                                                        ( YulExpressionFunctionCall
+                                                            ( YulFunctionCallDeclaration
+                                                                { ident = YulEvmBuiltin
+                                                                    ( Identifier "add" )
+                                                                , body =
+                                                                    [ YulExpressionPath
+                                                                        ( YulIdentifierPath
+                                                                            [ YulIdentifier
+                                                                                ( Identifier "sum" )
+                                                                            ]
+                                                                        )
+                                                                    , YulExpressionFunctionCall
+                                                                        ( YulFunctionCallDeclaration
+                                                                            { ident = YulEvmBuiltin
+                                                                                ( Identifier "mload" )
+                                                                            , body =
+                                                                                [ YulExpressionPath
+                                                                                    ( YulIdentifierPath
+                                                                                        [ YulIdentifier
+                                                                                            ( Identifier "dataElementLocation" )
+                                                                                        ]
+                                                                                    )
+                                                                                ]
+                                                                            }
+                                                                        )
+                                                                    ]
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                ]
+                                            }
+                                        )
+                                    , YulSwitchStatement
+                                        ( YulSwitchStatementDeclaration
+                                            { expr = YulExpressionFunctionCall
+                                                ( YulFunctionCallDeclaration
+                                                    { ident = YulEvmBuiltin
+                                                        ( Identifier "lt" )
+                                                    , body =
+                                                        [ YulExpressionPath
+                                                            ( YulIdentifierPath
+                                                                [ YulIdentifier
+                                                                    ( Identifier "x" )
+                                                                ]
+                                                            )
+                                                        , YulExpressionLiteral
+                                                            ( YulDecimalNumber 30 )
+                                                        ]
+                                                    }
+                                                )
+                                            , cases =
+                                                [
+                                                    ( YulBoolean True
+                                                    , YulBlock []
+                                                    )
+                                                ,
+                                                    ( YulBoolean False
+                                                    , YulBlock []
+                                                    )
+                                                ]
+                                            , defaultBlock = Just
+                                                ( YulBlock [] )
+                                            }
+                                        )
+                                    ]
+                                }
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]

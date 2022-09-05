@@ -1,0 +1,598 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity >=0.5.0 <0.9.0" }
+    )
+, Library
+    ( LibraryDefinition
+        { name = Identifier "Balances"
+        , body =
+            [ CFunction
+                ( FunctionDefinition
+                    { name = Identifier "move"
+                    , params =
+                        [ Parameter
+                            { kind = MappingType
+                                ( MappingDefinition
+                                    { mapping = MappingElementaryType Address
+                                    , kind = ElementaryType
+                                        ( UnsignedInteger
+                                            ( Just 256 )
+                                        )
+                                    }
+                                )
+                            , location = Just Storage
+                            , ident = Just
+                                ( Identifier "balances" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "from" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "to" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "amount" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncInternal ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression GreaterEqual
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "balances" )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "from" )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "amount" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression GreaterEqual
+                                        ( BinaryExpression Add
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "balances" )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "to" )
+                                                )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "amount" )
+                                            )
+                                        )
+                                        ( IndexExpression
+                                            ( IdentifierExpression
+                                                ( Identifier "balances" )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "to" )
+                                            )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression AssignSub
+                                ( IndexExpression
+                                    ( IdentifierExpression
+                                        ( Identifier "balances" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "from" )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "amount" )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression AssignAdd
+                                ( IndexExpression
+                                    ( IdentifierExpression
+                                        ( Identifier "balances" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "to" )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "amount" )
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "Token"
+        , inheritance = Nothing
+        , body =
+            [ CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType Address
+                            , kind = ElementaryType
+                                ( UnsignedInteger
+                                    ( Just 256 )
+                                )
+                            }
+                        )
+                    , modifiers = Just []
+                    , ident = Identifier "balances"
+                    , expr = Nothing
+                    }
+                )
+            , CUsing
+                ( UsingDirective
+                    { ident = IdentifierPath
+                        [ Identifier "Balances" ]
+                    , bound = DirectiveAll
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = MappingType
+                        ( MappingDefinition
+                            { mapping = MappingElementaryType Address
+                            , kind = MappingType
+                                ( MappingDefinition
+                                    { mapping = MappingElementaryType Address
+                                    , kind = ElementaryType
+                                        ( UnsignedInteger
+                                            ( Just 256 )
+                                        )
+                                    }
+                                )
+                            }
+                        )
+                    , modifiers = Just []
+                    , ident = Identifier "allowed"
+                    , expr = Nothing
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "Transfer"
+                    , params =
+                        [
+                            ( ElementaryType Address
+                            , Nothing
+                            , Just
+                                ( Identifier "from" )
+                            )
+                        ,
+                            ( ElementaryType Address
+                            , Nothing
+                            , Just
+                                ( Identifier "to" )
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Nothing
+                            , Just
+                                ( Identifier "amount" )
+                            )
+                        ]
+                    , anonymous = False
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "Approval"
+                    , params =
+                        [
+                            ( ElementaryType Address
+                            , Nothing
+                            , Just
+                                ( Identifier "owner" )
+                            )
+                        ,
+                            ( ElementaryType Address
+                            , Nothing
+                            , Just
+                                ( Identifier "spender" )
+                            )
+                        ,
+                            ( ElementaryType ( UnsignedInteger Nothing )
+                            , Nothing
+                            , Just
+                                ( Identifier "amount" )
+                            )
+                        ]
+                    , anonymous = False
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "transfer"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "to" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "amount" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType Bool
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "success" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "balances" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "move" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    , IdentifierExpression
+                                        ( Identifier "to" )
+                                    , IdentifierExpression
+                                        ( Identifier "amount" )
+                                    ]
+                                )
+                            )
+                        , Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "Transfer" )
+                                )
+                                ( CommaArguments
+                                    [ MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    , IdentifierExpression
+                                        ( Identifier "to" )
+                                    , IdentifierExpression
+                                        ( Identifier "amount" )
+                                    ]
+                                )
+                            )
+                        , Return
+                            ( Just
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "transferFrom"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "from" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "to" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "amount" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType Bool
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "success" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression GreaterEqual
+                                        ( IndexExpression
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "allowed" )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "from" )
+                                                )
+                                            )
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "sender" )
+                                                )
+                                            )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "amount" )
+                                        )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression AssignSub
+                                ( IndexExpression
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "allowed" )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "from" )
+                                        )
+                                    )
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "amount" )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "balances" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "move" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "from" )
+                                    , IdentifierExpression
+                                        ( Identifier "to" )
+                                    , IdentifierExpression
+                                        ( Identifier "amount" )
+                                    ]
+                                )
+                            )
+                        , Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "Transfer" )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "from" )
+                                    , IdentifierExpression
+                                        ( Identifier "to" )
+                                    , IdentifierExpression
+                                        ( Identifier "amount" )
+                                    ]
+                                )
+                            )
+                        , Return
+                            ( Just
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "approve"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "spender" )
+                            }
+                        , Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "tokens" )
+                            }
+                        ]
+                    , restrictions = [ FuncVisibility FuncExternal ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType Bool
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "success" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Equal
+                                        ( IndexExpression
+                                            ( IndexExpression
+                                                ( IdentifierExpression
+                                                    ( Identifier "allowed" )
+                                                )
+                                                ( MemberAccess
+                                                    ( IdentifierExpression
+                                                        ( Identifier "msg" )
+                                                    )
+                                                    ( MemberAccessIdentifier
+                                                        ( Identifier "sender" )
+                                                    )
+                                                )
+                                            )
+                                            ( IdentifierExpression
+                                                ( Identifier "spender" )
+                                            )
+                                        )
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 0.0 Nothing )
+                                        )
+                                    , ExpressionLiteral
+                                        ( StringLiteral "" )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IndexExpression
+                                    ( IndexExpression
+                                        ( IdentifierExpression
+                                            ( Identifier "allowed" )
+                                        )
+                                        ( MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "spender" )
+                                    )
+                                )
+                                ( IdentifierExpression
+                                    ( Identifier "tokens" )
+                                )
+                            )
+                        , Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "Approval" )
+                                )
+                                ( CommaArguments
+                                    [ MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    , IdentifierExpression
+                                        ( Identifier "spender" )
+                                    , IdentifierExpression
+                                        ( Identifier "tokens" )
+                                    ]
+                                )
+                            )
+                        , Return
+                            ( Just
+                                ( ExpressionLiteral ( BooleanLiteral True ) )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "balanceOf"
+                    , params =
+                        [ Parameter
+                            { kind = ElementaryType Address
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "tokenOwner" )
+                            }
+                        ]
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncMutability View
+                        ]
+                    , returns = Just
+                        [ Parameter
+                            { kind = ElementaryType ( UnsignedInteger Nothing )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "balance" )
+                            }
+                        ]
+                    , body = BlockStatement
+                        [ Return
+                            ( Just
+                                ( IndexExpression
+                                    ( IdentifierExpression
+                                        ( Identifier "balances" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "tokenOwner" )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]

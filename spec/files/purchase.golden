@@ -1,0 +1,670 @@
+[ Pragma
+    ( PragmaDefinition
+        { pragma = "solidity ^0.8.4" }
+    )
+, Contract
+    ( ContractDefinition
+        { abstract = False
+        , name = Identifier "Purchase"
+        , inheritance = Nothing
+        , body =
+            [ CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType ( UnsignedInteger Nothing )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "value"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType AddressPayable
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "seller"
+                    , expr = Nothing
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = ElementaryType AddressPayable
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "buyer"
+                    , expr = Nothing
+                    }
+                )
+            , CEnum
+                ( EnumDefinition
+                    { ident = Identifier "State"
+                    , members =
+                        [ Identifier "Created"
+                        , Identifier "Locked"
+                        , Identifier "Release"
+                        , Identifier "Inactive"
+                        ]
+                    }
+                )
+            , CStateVariableDec
+                ( StateVariableDec
+                    { kind = IdentifierType
+                        ( IdentifierPath
+                            [ Identifier "State" ]
+                        )
+                    , modifiers = Just [ StatePublic ]
+                    , ident = Identifier "state"
+                    , expr = Nothing
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "condition"
+                    , params = Just
+                        [ Parameter
+                            { kind = ElementaryType Bool
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "condition_" )
+                            }
+                        ]
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "require" )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "condition_" )
+                                    ]
+                                )
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "OnlyBuyer"
+                    , params = []
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "OnlySeller"
+                    , params = []
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "InvalidState"
+                    , params = []
+                    }
+                )
+            , CError
+                ( ErrorDefinition
+                    { ident = Identifier "ValueNotEven"
+                    , params = []
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "onlyBuyer"
+                    , params = Just []
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "buyer" )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "OnlyBuyer" )
+                                        )
+                                        ( CommaArguments [] )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "onlySeller"
+                    , params = Just []
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "sender" )
+                                        )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "seller" )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "OnlySeller" )
+                                        )
+                                        ( CommaArguments [] )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , CModifier
+                ( ModifierDefinition
+                    { ident = Identifier "inState"
+                    , params = Just
+                        [ Parameter
+                            { kind = IdentifierType
+                                ( IdentifierPath
+                                    [ Identifier "State" ]
+                                )
+                            , location = Nothing
+                            , ident = Just
+                                ( Identifier "state_" )
+                            }
+                        ]
+                    , modifiers = []
+                    , body = BlockStatement
+                        [ If
+                            ( IfStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( IdentifierExpression
+                                        ( Identifier "state" )
+                                    )
+                                    ( IdentifierExpression
+                                        ( Identifier "state_" )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "InvalidState" )
+                                        )
+                                        ( CommaArguments [] )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        , ExpressionStatement
+                            ( IdentifierExpression
+                                ( Identifier "_" )
+                            )
+                        ]
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "Aborted"
+                    , params = []
+                    , anonymous = False
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "PurchaseConfirmed"
+                    , params = []
+                    , anonymous = False
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "ItemReceived"
+                    , params = []
+                    , anonymous = False
+                    }
+                )
+            , CEvent
+                ( EventDefinition
+                    { ident = Identifier "SellerRefunded"
+                    , params = []
+                    , anonymous = False
+                    }
+                )
+            , Constructor
+                ( ConstructorDefinition
+                    { params = []
+                    , modifiers = Just [ ConPayable ]
+                    , body = BlockStatement
+                        [ ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "seller" )
+                                )
+                                ( PayableConversion
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        ]
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "value" )
+                                )
+                                ( BinaryExpression Div
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "value" )
+                                        )
+                                    )
+                                    ( ExpressionLiteral
+                                        ( NumberLiteral 2.0 Nothing )
+                                    )
+                                )
+                            )
+                        , If
+                            ( IfStatement
+                                { expr = BinaryExpression NotEqual
+                                    ( TupleExpression
+                                        [ Just
+                                            ( BinaryExpression Mul
+                                                ( ExpressionLiteral
+                                                    ( NumberLiteral 2.0 Nothing )
+                                                )
+                                                ( IdentifierExpression
+                                                    ( Identifier "value" )
+                                                )
+                                            )
+                                        ]
+                                    )
+                                    ( MemberAccess
+                                        ( IdentifierExpression
+                                            ( Identifier "msg" )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "value" )
+                                        )
+                                    )
+                                , trueStmt = Revert
+                                    ( FunctionCall
+                                        ( IdentifierExpression
+                                            ( Identifier "ValueNotEven" )
+                                        )
+                                        ( CommaArguments [] )
+                                    )
+                                , elseStmt = Nothing
+                                }
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "abort"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlySeller" ]
+                                , args = Nothing
+                                }
+                            )
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "inState" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "State" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "Created" )
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "Aborted" )
+                                )
+                                ( CommaArguments [] )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "state" )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "State" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "Inactive" )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "seller" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ MemberAccess
+                                        ( FunctionCall ( ElementaryTypeExpression Address )
+                                            ( CommaArguments
+                                                [ IdentifierExpression
+                                                    ( Identifier "this" )
+                                                ]
+                                            )
+                                        )
+                                        ( MemberAccessIdentifier
+                                            ( Identifier "balance" )
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "confirmPurchase"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "inState" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "State" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "Created" )
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "condition" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ BinaryExpression Equal
+                                            ( MemberAccess
+                                                ( IdentifierExpression
+                                                    ( Identifier "msg" )
+                                                )
+                                                ( MemberAccessIdentifier
+                                                    ( Identifier "value" )
+                                                )
+                                            )
+                                            ( TupleExpression
+                                                [ Just
+                                                    ( BinaryExpression Mul
+                                                        ( ExpressionLiteral
+                                                            ( NumberLiteral 2.0 Nothing )
+                                                        )
+                                                        ( IdentifierExpression
+                                                            ( Identifier "value" )
+                                                        )
+                                                    )
+                                                ]
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        , FuncMutability Payable
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "PurchaseConfirmed" )
+                                )
+                                ( CommaArguments [] )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "buyer" )
+                                )
+                                ( PayableConversion
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "msg" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "sender" )
+                                            )
+                                        ]
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "state" )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "State" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "Locked" )
+                                    )
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "confirmReceived"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlyBuyer" ]
+                                , args = Nothing
+                                }
+                            )
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "inState" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "State" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "Locked" )
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "ItemReceived" )
+                                )
+                                ( CommaArguments [] )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "state" )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "State" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "Release" )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "buyer" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ IdentifierExpression
+                                        ( Identifier "value" )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            , CFunction
+                ( FunctionDefinition
+                    { name = Identifier "refundSeller"
+                    , params = []
+                    , restrictions =
+                        [ FuncVisibility FuncExternal
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "onlySeller" ]
+                                , args = Nothing
+                                }
+                            )
+                        , FuncModifierInvocation
+                            ( ModifierInvocation
+                                { path = IdentifierPath
+                                    [ Identifier "inState" ]
+                                , args = Just
+                                    ( CommaArguments
+                                        [ MemberAccess
+                                            ( IdentifierExpression
+                                                ( Identifier "State" )
+                                            )
+                                            ( MemberAccessIdentifier
+                                                ( Identifier "Release" )
+                                            )
+                                        ]
+                                    )
+                                }
+                            )
+                        ]
+                    , returns = Nothing
+                    , body = BlockStatement
+                        [ Emit
+                            ( FunctionCall
+                                ( IdentifierExpression
+                                    ( Identifier "SellerRefunded" )
+                                )
+                                ( CommaArguments [] )
+                            )
+                        , ExpressionStatement
+                            ( BinaryExpression Assign
+                                ( IdentifierExpression
+                                    ( Identifier "state" )
+                                )
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "State" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "Inactive" )
+                                    )
+                                )
+                            )
+                        , ExpressionStatement
+                            ( FunctionCall
+                                ( MemberAccess
+                                    ( IdentifierExpression
+                                        ( Identifier "seller" )
+                                    )
+                                    ( MemberAccessIdentifier
+                                        ( Identifier "transfer" )
+                                    )
+                                )
+                                ( CommaArguments
+                                    [ BinaryExpression Mul
+                                        ( ExpressionLiteral
+                                            ( NumberLiteral 3.0 Nothing )
+                                        )
+                                        ( IdentifierExpression
+                                            ( Identifier "value" )
+                                        )
+                                    ]
+                                )
+                            )
+                        ]
+                    }
+                )
+            ]
+        }
+    )
+]
