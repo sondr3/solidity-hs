@@ -4,13 +4,16 @@ version:            0.1.0.0
 author:             Sondre Aasemoen
 maintainer:         sondre@eons.io
 synopsis:           A parser for the Solidity smart contract language
-description:        A parser for the Solidity smart contract language
+description:
+  A parser for the Solidity smart contract language, written in megaparsec 
+  with full support of version 0.8 of the language specification.
+
 homepage:           https://github.com/sondr3/solidity-hs
 license:            (MIT OR Apache-2.0)
 license-file:       LICENSE LICENSE_APACHE
 build-type:         Simple
 category:           System
-tested-with:        GHC ==9.2
+tested-with:        GHC ==8.10 || ==9.0 || ==9.2
 extra-source-files:
   CHANGELOG.md
   README.md
@@ -34,11 +37,11 @@ common config
     -Wnoncanonical-monad-instances -fhide-source-paths
     -Wmissing-export-lists -Wpartial-fields
     -Wmissing-deriving-strategies -Werror=missing-deriving-strategies
-    -fwrite-ide-info -Wunused-packages -O2
+    -fwrite-ide-info -Wunused-packages
 
   build-depends:
-    , base           ^>=4.16
-    , text           ^>=2
+    , base  ^>=4.16
+    , text  ^>=2
 
 library
   import:          config
@@ -81,8 +84,8 @@ test-suite solidity-test
   build-depends:
     , hspec             ^>=2.10
     , hspec-megaparsec  ^>=2.2
-    , solidity
     , megaparsec        ^>=9.2
+    , solidity
 
 test-suite solidity-golden
   import:         config
@@ -92,7 +95,7 @@ test-suite solidity-golden
   ghc-options:    -threaded -rtsopts -with-rtsopts=-N
   build-depends:
     , filepath       ^>=1.4
-    , solidity
     , pretty-simple  ^>=4.1
+    , solidity
     , tasty          ^>=1.4
     , tasty-golden   ^>=2.3
