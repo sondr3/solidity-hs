@@ -28,11 +28,11 @@ median x =
   where
     n = length x
 
-safeMin :: Ord a => [a] -> Maybe a
+safeMin :: (Ord a) => [a] -> Maybe a
 safeMin [] = Nothing
 safeMin xs = Just $ minimum xs
 
-safeMax :: Ord a => [a] -> Maybe a
+safeMax :: (Ord a) => [a] -> Maybe a
 safeMax [] = Nothing
 safeMax xs = Just $ maximum xs
 

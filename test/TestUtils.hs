@@ -12,7 +12,7 @@ import Text.Printf (printf)
 testParse :: Parsec e s a -> s -> Either (ParseErrorBundle s e) a
 testParse p = parse p ""
 
-parseFile :: Applicative f => Text -> f Solidity
+parseFile :: (Applicative f) => Text -> f Solidity
 parseFile t = case parse parseSolidity "" t of
   Right out -> pure out
   Left err -> error $ errorBundlePretty err
