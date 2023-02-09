@@ -151,8 +151,8 @@ instance PrettyPrint Statement where
 instance PrettyPrint Expression where
   pretty expr ind = indent ind (showExpression expr)
 
-prettyPrint :: PrettyPrint a => [a] -> Text
+prettyPrint :: (PrettyPrint a) => [a] -> Text
 prettyPrint = foldl' (\acc s -> acc <> pretty s 0) ""
 
-prettyPrintLn :: PrettyPrint a => [a] -> IO ()
+prettyPrintLn :: (PrettyPrint a) => [a] -> IO ()
 prettyPrintLn syntax = TIO.putStrLn $ prettyPrint syntax
