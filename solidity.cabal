@@ -49,7 +49,7 @@ library
   hs-source-dirs:  src
   build-depends:
     , containers          ^>=0.6
-    , megaparsec          ^>=9.2
+    , megaparsec          ^>=9.3
     , optics              ^>=0.4
     , parser-combinators  ^>=1.3
 
@@ -84,7 +84,7 @@ test-suite solidity-test
   build-depends:
     , hspec             ^>=2.10
     , hspec-megaparsec  ^>=2.2
-    , megaparsec        ^>=9.2
+    , megaparsec        ^>=9.3
     , solidity
 
 test-suite solidity-golden
